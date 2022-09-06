@@ -1,10 +1,10 @@
 <?php
 
 namespace Database\Seeders;
+use  App\Models\TypeVehicle;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-
 class DatabaseSeeder extends Seeder
 {
     /**
@@ -14,7 +14,9 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        // \App\Models\User::factory(10)->create();
+     
+        $this->call(TypeVehicleSeeder::class);
+        $this->call(VehicleSeeder::class);
 
         // \App\Models\User::factory()->create([
         //     'name' => 'Test User',
