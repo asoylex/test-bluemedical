@@ -208,39 +208,44 @@ class EntranceExitController extends Controller
     try {
         $now=now();
         $vehicle = Vehicle::where('license_plate', $request->license_plate)->first();
-        $entranceIsAvailable = EntranceExit::where('exit', null)->first();
-        $idVehicle;
 
-    if ($vehicle) {
-        $idVehicle = $vehicle->id;
-      }else{
-          $vehicle = new Vehicle();
-          $vehicle->license_plate = $request->license_plate;
-          $vehicle->type_vehicle_id = 1;
-          $vehicle->status = 0;
-          $vehicle->save();
-          $idVehicle =$vehicle->id;
+        if($vehicle){
+            $entranceIsAvailable = EntranceExit::where('vehicle_id',$vehicle->id )->where('status', 0)->where('exit', null)->latest()->first();
+          if($entranceIsAvailable){
+                $this->response['status'] = 'error';
+                $this->response['data'] = [];
+                $this->response['message'] = 'already have entrance';
+                return response()->json($this->response, 200);
+            }else{
+                $entranceExit = new EntranceExit();
+                $entranceExit->entrance = $now;
+                $entranceExit->vehicle_id = $vehicle->id;
+                $entranceExit->save();
+        
+                $this->response['status'] = 'success';
+                $this->response['data'] = $entranceExit;
+                $this->response['message'] = 'Request executed';
+                return response()->json($this->response, 200);
+            }
 
-      }
+        }else{
+            $vehicle = new Vehicle();
+            $vehicle->license_plate = $request->license_plate;
+            $vehicle->type_vehicle_id = 1;
+            $vehicle->status = 0;
+            $vehicle->save();
+            $idVehicle =$vehicle->id;
 
-      if ($entranceIsAvailable) {
-            $this->response['status'] = 'error';
-            $this->response['data'] = [];
-            $this->response['message'] = 'already use the entrance';
-            return response()->json($this->response, 200);
-      } else {
-      
             $entranceExit = new EntranceExit();
             $entranceExit->entrance = $now;
             $entranceExit->vehicle_id = $idVehicle;
             $entranceExit->save();
-    
+
             $this->response['status'] = 'success';
             $this->response['data'] = $entranceExit;
             $this->response['message'] = 'Request executed';
             return response()->json($this->response, 200);
-      }
-      
+        }
     } catch (\Throwable $th) {
         return response()->json(['error' => $th->getMessage()], 500);
     }
